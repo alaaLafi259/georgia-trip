@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جواز سفر جورجيا — خط سير الرحلة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<style>
+:root{
+  --wine:#6B1E2B;
+  --wine-dark:#3E1119;
+  --wine-soft:#8C3145;
+  --cream:#F2EAD9;
+  --paper:#FBF7EF;
+  --ink:#2B2420;
+  --ink-soft:#6b6157;
+  --teal:#2F6E6A;
+  --gold:#C79A3D;
+  --gold-light:#E4C88B;
+  --line:#E1D5BC;
+  --radius:16px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--ink);
+  font-family:'Tajawal',sans-serif;
+  min-height:100vh;
+}
+h1,h2,h3,.display{font-family:'Cairo',sans-serif;}
+img{max-width:100%;display:block;}
+button{font-family:inherit;cursor:pointer;}
+a{color:inherit;}
+
+/* ===== Header / Passport cover ===== */
+.cover{
+  background:
+    radial-gradient(circle at 15% 20%, rgba(196,155,61,.18), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(196,155,61,.12), transparent 45%),
+    linear-gradient(160deg,var(--wine) 0%,var(--wine-dark) 100%);
+  color:var(--gold-light);
+  padding:34px 20px 26px;
+  text-align:center;
+  border-bottom:6px solid var(--gold);
+  position:relative;
+  overflow:hidden;
+}
+.cover .emblem{
+  width:56px;height:56px;margin:0 auto 10px;
+  border:2px solid var(--gold);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;
+}
+.cover h1{
+  margin:0 0 6px;
+  font-size:clamp(24px,5vw,34px);
+  font-weight:900;
+  letter-spacing:.5px;
+  color:#fff;
+}
+.cover p.sub{margin:0;color:var(--gold-light);font-size:14px;opacity:.9}
+.cover .stamps-count{
+  margin-top:18px;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  background:rgba(0,0,0,.18);
+  border:1px solid rgba(196,155,61,.45);
+  padding:8px 18px;
+  border-radius:999px;
+  font-family:'Cairo',sans-serif;
+  font-weight:700;
+  font-size:14px;
+}
+.cover .stamps-count b{font-size:18px;color:var(--gold)}
+
+/* ===== Tabs ===== */
+.tabs{
+  display:flex;
+  gap:8px;
+  padding:14px 12px;
+  max-width:980px;
+  margin:0 auto;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.tab-btn{
+  border:2px solid var(--line);
+  background:var(--paper);
+  color:var(--ink);
+  padding:10px 16px;
+  border-radius:999px;
+  font-weight:700;
+  font-family:'Cairo',sans-serif;
+  font-size:14px;
+  display:flex;align-items:center;gap:8px;
+  transition:.2s;
+}
+.tab-btn .ring{
+  width:22px;height:22px;border-radius:50%;
+  background:conic-gradient(var(--teal) calc(var(--p,0)*1%), var(--line) 0);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:800;color:var(--ink);
+}
+.tab-btn .ring::after{
+  content:"";width:15px;height:15px;border-radius:50%;background:var(--paper);
+}
+.tab-btn.active{
+  background:var(--wine);
+  border-color:var(--wine);
+  color:#fff;
+}
+.tab-btn.active .ring::after{background:var(--wine);}
+
+/* ===== Main ===== */
+main{max-width:980px;margin:0 auto;padding:0 14px 60px;}
+.city-section{display:none;}
+.city-section.active{display:block;animation:fadein .35s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.city-head{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  gap:12px;flex-wrap:wrap;
+  margin:22px 0 12px;
+}
+.city-head h2{font-size:24px;margin:0;color:var(--wine-dark);}
+.city-head .meta{font-size:13px;color:var(--ink-soft)}
+.progress-wrap{flex:1;min-width:180px;}
+.progress-bar{
+  height:9px;background:var(--line);border-radius:99px;overflow:hidden;
+}
+.progress-bar > span{
+  display:block;height:100%;background:linear-gradient(90deg,var(--teal),#3f8f8a);
+  border-radius:99px;transition:width .4s ease;
+}
+.progress-label{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+
+.controls{display:flex;gap:8px;margin:6px 0 14px;flex-wrap:wrap;}
+.view-toggle{
+  display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;
+}
+.view-toggle button{
+  border:none;background:var(--paper);padding:8px 14px;font-size:13px;font-weight:700;
+  font-family:'Cairo',sans-serif;color:var(--ink-soft);
+}
+.view-toggle button.active{background:var(--teal);color:#fff;}
+.reset-btn{
+  border:1px solid var(--wine-soft);background:transparent;color:var(--wine-soft);
+  padding:8px 14px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Cairo',sans-serif;
+}
+.reset-btn:hover{background:var(--wine-soft);color:#fff;}
+
+.map{
+  height:280px;border-radius:var(--radius);overflow:hidden;
+  border:1px solid var(--line);margin-bottom:18px;
+  box-shadow:0 2px 10px rgba(43,36,32,.08);
+}
+
+.day-header{
+  font-family:'Cairo',sans-serif;font-weight:800;color:var(--wine);
+  font-size:15px;margin:20px 0 10px;
+  display:flex;align-items:center;gap:10px;
+}
+.day-header::after{content:"";flex:1;height:1px;background:var(--line);}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  gap:14px;
+}
+
+.card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden;
+  position:relative;
+  transition:.2s;
+  display:flex;flex-direction:column;
+}
+.card.visited{border-color:var(--gold);box-shadow:0 0 0 2px rgba(199,154,61,.35);}
+.card .thumb{
+  height:150px;background:linear-gradient(135deg,#d8cbb0,#c3b291);
+  position:relative;display:flex;align-items:center;justify-content:center;
+  color:#7a6b4f;font-size:26px;overflow:hidden;
+}
+.card .thumb .illustration{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.card .thumb .gallery{
+  position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.card .thumb .gallery::-webkit-scrollbar{display:none;}
+.card .thumb .gallery img{
+  flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;
+}
+.g-nav{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:24px;height:24px;border-radius:50%;border:none;
+  background:rgba(43,36,32,.45);color:#fff;font-size:15px;line-height:1;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  opacity:0;transition:opacity .2s;z-index:2;
+}
+.card .thumb:hover .g-nav{opacity:1;}
+.g-prev{right:6px;} .g-next{left:6px;}
+.g-dots{
+  position:absolute;bottom:6px;left:0;right:0;
+  display:flex;justify-content:center;gap:4px;z-index:2;
+}
+.g-dots span{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.85);box-shadow:0 0 2px rgba(0,0,0,.5);}
+.g-video{
+  position:absolute;top:8px;left:8px;z-index:2;
+  width:28px;height:28px;border-radius:50%;background:rgba(43,36,32,.55);
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  text-decoration:none;
+}
+.card .body{padding:11px 13px 13px;display:flex;flex-direction:column;gap:6px;flex:1;}
+.card h3{margin:0;font-size:15px;line-height:1.4;}
+.card p{margin:0;font-size:12.5px;color:var(--ink-soft);line-height:1.6;flex:1;}
+.card .row{display:flex;align-items:center;justify-content:space-between;margin-top:4px;gap:8px;}
+.card .loc-link{
+  font-size:11.5px;color:var(--teal);text-decoration:none;font-weight:700;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.focus-map-btn{
+  font-size:11.5px;color:var(--wine);background:rgba(107,30,43,.08);
+  border:1px solid rgba(107,30,43,.25);border-radius:8px;
+  padding:4px 8px;font-weight:700;font-family:'Tajawal',sans-serif;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.focus-map-btn:hover{background:rgba(107,30,43,.16);}
+.card .row{flex-wrap:wrap;}
+@keyframes flashCard{
+  0%,100%{box-shadow:0 0 0 2px transparent;}
+  25%,75%{box-shadow:0 0 0 3px var(--gold);}
+}
+.card.flash{animation:flashCard 1.4s ease;}
+.title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
+.title-row h3{flex:1;}
+.act-chip{
+  flex-shrink:0;font-size:10.5px;font-weight:800;font-family:'Cairo',sans-serif;
+  color:var(--teal);background:rgba(47,110,106,.12);
+  border:1px solid rgba(47,110,106,.3);border-radius:999px;
+  padding:3px 9px;white-space:nowrap;
+}
+.card{cursor:default;}
+.card.activities-open .act-chip{background:var(--teal);color:#fff;}
+.activities-panel{
+  display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease;
+}
+.activities-inner{overflow:hidden;min-height:0;}
+.card.activities-open .activities-panel{grid-template-rows:1fr;}
+.activity{
+  background:rgba(47,110,106,.07);border:1px solid rgba(47,110,106,.2);
+  border-radius:10px;padding:8px 10px;margin-top:6px;
+}
+.activity-head{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.a-icon{font-size:14px;}
+.a-title{font-family:'Cairo',sans-serif;font-weight:800;font-size:12.5px;color:var(--wine-dark);}
+.a-desc{margin:0 0 5px;font-size:11.5px;color:var(--ink-soft);line-height:1.6;}
+.a-meta{display:flex;flex-wrap:wrap;gap:5px;}
+.a-badge{
+  font-size:10px;font-weight:700;color:var(--teal);
+  background:rgba(255,255,255,.7);border:1px solid rgba(47,110,106,.25);
+  border-radius:6px;padding:2px 6px;
+}
+.check-label{
+  display:flex;align-items:center;gap:6px;cursor:pointer;
+  font-size:12px;font-weight:700;color:var(--ink-soft);
+  font-family:'Cairo',sans-serif;
+}
+.check-label input{width:17px;height:17px;accent-color:var(--teal);cursor:pointer;}
+
+/* Passport stamp signature element */
+.stamp{
+  position:absolute;top:8px;left:8px;
+  width:60px;height:60px;border-radius:50%;
+  border:2.5px dashed var(--wine);
+  color:var(--wine);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cairo',sans-serif;font-weight:900;font-size:10px;text-align:center;
+  transform:rotate(-16deg) scale(0);
+  background:rgba(255,255,255,.75);
+  opacity:0;
+  pointer-events:none;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1), opacity .25s;
+}
+.card.visited .stamp{transform:rotate(-16deg) scale(1);opacity:1;}
+.stamp span{display:block;line-height:1.15;}
+
+footer{
+  text-align:center;padding:26px 14px 40px;color:var(--ink-soft);font-size:12px;
+}
+
+@media (max-width:520px){
+  .map{height:220px;}
+}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="emblem">🏔️</div>
+  <h1>جواز سفر جورجيا</h1>
+  <p class="sub">تبليسي · كازبيجي · كوتايسي · باتومي — 10 أيام</p>
+  <div class="stamps-count">🖋️ الأختام المجمّعة: <b id="totalStamps">0</b> / <span id="totalCount">0</span></div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<main id="main"></main>
+
+<footer>علّم كل مزار بعد زيارته ليُختم في جواز سفرك — يُحفظ تقدّمك تلقائيًا في هذا الجهاز.</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+/* ================= DATA ================= */
+const CITIES = [
+  {
+    "id": "tbilisi",
+    "name": "تبليسي",
+    "days": 3,
+    "center": [
+      41.6959,
+      44.802
+    ],
+    "zoom": 13,
+    "landmarks": [
+      {
+        "id": "tb1",
+        "name": "البلدة القديمة",
+        "en": "Old Town, Tbilisi",
+        "lat": 41.693,
+        "lng": 44.808,
+        "day": 1,
+        "desc": "أزقة تبليسي التاريخية بشرفاتها الخشبية المزخرفة وبيوتها العتيقة المتراصة على منحدر تلة ناريكالا. أفضل وقت للتجول فيها العصر أو المساء حين تُضاء الأزقة، وتقودك مباشرة إلى حي الحمامات وسوق الحرفيين.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/33/00/b8/ad/caption.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/33/00/b8/9e/caption.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1d/00/00/47/aerial-view-of-the-narikala.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/13/2d/46/59/photo3jpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/33/00/b8/aa/caption.jpg?w=1100&h=-1&s=1"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjHFq1W/",
+        "gmaps": "https://maps.app.goo.gl/CvWgfW3rsQ1bJwPSA",
+        "activities": [
+          {
+            "icon": "🍷",
+            "title": "حانات نبيذ جورجي تقليدية",
+            "desc": "أزقة البلدة القديمة مليانة حانات صغيرة تقدم نبيذ جورجي محلي بطريقة التخمير التقليدية في أواني القفيفري (Qvevri)، غالبًا بموسيقى جاز حية في المساء.",
+            "duration": "حسب رغبتك",
+            "price": "يبدأ من ٥-١٠ لاري للكأس تقريبًا",
+            "season": "مساءً طوال السنة"
+          }
+        ]
+      },
+      {
+        "id": "tb2",
+        "name": "قلعة ناريكالا",
+        "en": "Narikala",
+        "lat": 41.6879,
+        "lng": 44.8091,
+        "day": 1,
+        "desc": "أقدم حصون تبليسي (القرن الرابع الميلادي) وأشهر رموزها، تطل على المدينة ونهر متكفاري من أعلى نقطة في المدينة القديمة. يصلها تلفريك من ريكه بارك، وبجانبها تمثال \"أم جورجيا\" الشهير.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/14/14/0b/0a/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1c/fb/0c/8e/narikala-fortress-over.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/fc/6d/23/photo5jpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/fc/6d/1e/photo0jpg.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/04/c3/93/18/caption.jpg?w=800&h=-1&s=1"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjH891h/",
+        "gmaps": "https://maps.app.goo.gl/eNwvo1nV4G4DLi568"
+      },
+      {
+        "id": "tb3",
+        "name": "التلفريك (ريكه بارك)",
+        "en": "Rike Park",
+        "lat": 41.6929,
+        "lng": 44.8127,
+        "day": 1,
+        "desc": "رحلة تلفريك بانورامية مدتها دقيقتان من ريكه بارك صعودًا إلى قلعة ناريكالا، وتُعد من أجمل زوايا مشاهدة المدينة القديمة والجسر الزجاجي من الأعلى. تعمل يوميًا حتى العاشرة مساءً وتقبل بطاقة النقل نفسها المستخدمة في الحافلات.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/07/95/14/57/caption.jpg?w=1600&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/32/c3/e7/e9/caption.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/32/6f/33/ae/caption.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/32/64/7e/13/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/32/56/87/27/caption.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjH5P2P/",
+        "gmaps": "https://maps.app.goo.gl/8mfhWT8GDaH3NrZUA",
+        "activities": [
+          {
+            "icon": "🪂",
+            "title": "زيبلاين تبليسي",
+            "desc": "حبل انزلاقي طويل ينطلق من قمة الجبل قرب قلعة ناريكالا ويصل بالتلفريك، وينتهي داخل الحديقة النباتية الوطنية. مناسب لكل الأعمار وطاقم العمل مدرّب.",
+            "duration": "دقيقتان تقريبًا",
+            "price": "غير محدد (يُدفع في الموقع)",
+            "season": "يعمل معظم أيام السنة، الأفضل في الطقس الصافي"
+          }
+        ]
+      },
+      {
+        "id": "tb4",
+        "name": "حمامات أباناتوباني الكبريتية",
+        "en": "Abanotubani",
+        "lat": 41.6886,
+        "lng": 44.8098,
+        "day": 1,
+        "desc": "حي الحمامات الكبريتية التقليدية بقبابه الطينية المميزة، حيث تنبع مياه معدنية ساخنة استُخدمت منذ قرون. يمكنك تجربة حمام خاص أو عام، وبجانبه يقع شلال ليغفتاخيفي الصغير داخل المدينة.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/11/42/9d/23/caption.jpg?w=2000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/2a/fc/e5/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2a/bd/ec/46/caption.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/28/24/c8/32/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1c/f1/de/92/caption.jpg?w=1100&h=-1&s=1"
+        ],
+        "video": "https://vt.tiktok.com/ZSVj9Gyp9/",
+        "gmaps": "https://maps.app.goo.gl/ankocVv8TUxjJsnL8",
+        "activities": [
+          {
+            "icon": "💆",
+            "title": "غرفة خاصة + تدليك وتقشير جورجي تقليدي",
+            "desc": "حجز غرفة خاصة داخل الحمامات مع جلسة تقشير بالقفاز الجورجي التقليدي (Kese) وتدليك، تجربة أكثر خصوصية من الحمام العام المشترك.",
+            "duration": "ساعة تقريبًا",
+            "price": "٥٠-١٥٠ لاري (١٨-٥٥$) حسب مستوى الغرفة",
+            "season": "طوال العام، الصباح الباكر أهدأ وقت"
+          }
+        ]
+      },
+      {
+        "id": "tb5",
+        "name": "جسر السلام",
+        "en": "Bridge of Peace, Tbilisi",
+        "lat": 41.6928,
+        "lng": 44.8098,
+        "day": 2,
+        "desc": "جسر زجاجي وفولاذي حديث افتُتح عام 2010 يربط ضفتي نهر متكفاري بين ريكه بارك والمدينة القديمة. يضيء ليلاً بآلاف المصابيح التي ترسل رسالة مورس رمزية، ويُعد من أكثر نقاط تبليسي تصويرًا.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/0e/4c/9a/caption.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/96/30/e6/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/aa/4d/16/caption.jpg?w=1000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/fb/9a/09/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/52/0a/41/caption.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjxC32a/",
+        "gmaps": "https://maps.app.goo.gl/XbAN8VKXyGRBtnfz6"
+      },
+      {
+        "id": "tb6",
+        "name": "كاتدرائية تسميندا ساميبا",
+        "en": "Holy Trinity Cathedral of Tbilisi",
+        "lat": 41.6959,
+        "lng": 44.8203,
+        "day": 2,
+        "desc": "أكبر كاتدرائية أرثوذكسية في جورجيا وثالث أطول كاتدرائية أرثوذكسية في العالم، شُيدت بين 1995 و2004 احتفالًا بألفي عام على ميلاد المسيح. تقع على تلة إيليا وتُرى من معظم أنحاء المدينة بقبتها الذهبية.",
+        "images": [
+          "https://wander-lush.org/wp-content/uploads/2021/10/Emily-Lush-churches-in-Tbilisi-Georgia-Sameba-Cathedral.jpg",
+          "https://thumbs.dreamstime.com/b/green-foliage-sameba-cathedral-tbilisi-city-green-foliage-holy-trinity-cathedral-sameba-tbilisi-city-overcast-416763919.jpg",
+          "https://www.advantour.com/img/georgia/tbilisi/sameba.jpg",
+          "https://eurasia.travel/wp-content/uploads/2025/05/7.-Tsminda-Sameba-Cathedral-Tbilisi.jpg",
+          "https://www.advantour.com/img/georgia/tbilisi/sameba-cathedral3.jpg"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjQNwPy/",
+        "gmaps": "https://maps.app.goo.gl/7VJGAF8Z1CoWs1mR7"
+      },
+      {
+        "id": "tb7",
+        "name": "سجلات جورجيا (Chronicle of Georgia)",
+        "en": "Chronicle of Georgia",
+        "lat": 41.7706165,
+        "lng": 44.8104195,
+        "day": 2,
+        "desc": "نصب ضخم من أعمدة البازلت الأسود بارتفاع نحو 35 مترًا، نحته الفنان الجورجي زوراب تسيريتيلي، ومنقوش عليه مشاهد من الكتاب المقدس وتاريخ جورجيا وملوكها. يقع على تلة مطلة على بحيرة تبليسي خارج المدينة، ويُعد من أكثر نقاط التصوير إثارة وغرابة في محيط تبليسي.",
+        "images": [
+          "https://images.pexels.com/photos/31626151/pexels-photo-31626151/free-photo-of-the-chronicles-of-georgia-monument-in-tbilisi.jpeg?cs=tinysrgb&dpr=1&w=500",
+          "https://www.mywanderlust.pl/wp-content/uploads/2019/02/chronicle-of-georgia-tbilisi-24.jpg",
+          "https://cdn.georgiantravelguide.com/storage/thumbnails/dji-2230462-7-2.jpg",
+          "https://travelersanddreamers.com/wp-content/uploads/2022/07/chronicles-of-Georgia-13-1024x678.jpg",
+          "https://www.journalofnomads.com/wp-content/uploads/2017/08/Chronicle-of-Georgia-14-1024x682.jpg"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjXdKgF/",
+        "gmaps": "https://maps.app.goo.gl/kLzKhNakPsBGLXXR9",
+        "activities": [
+          {
+            "icon": "🏊",
+            "title": "السباحة والرياضات المائية في بحر تبليسي",
+            "desc": "البحيرة الاصطناعية الكبيرة تبعد دقائق عن النصب، وتوفر سباحة صيفية وركوب أمواج وتجديف وتأجير قوارب صغيرة في مياه هادئة محاطة بالجبال.",
+            "duration": "حسب رغبتك",
+            "price": "تأجير القوارب بأسعار رمزية",
+            "season": "صيف بشكل أساسي"
+          }
+        ]
+      },
+      {
+        "id": "tb8",
+        "name": "متحف جورجيا الوطني",
+        "en": "Georgian National Museum",
+        "lat": 41.6977,
+        "lng": 44.7982,
+        "day": 2,
+        "desc": "يضم أشهر مقتنياته \"كنوز جورجيا الذهبية\"، مجوهرات ذهبية عمرها آلاف السنين، إضافة إلى معرض دائم يوثق تاريخ جورجيا من العصر الحجري حتى الاحتلال السوفييتي.",
+        "images": [
+          "https://cdn.georgia.to/img/thumbnails/VzwEekqfsauC4mam2m25Ra_smedium.jpg",
+          "https://cdn.georgia.to/img/thumbnails/cY3eJdNJU3CfTbxCA6nNWx_smedium.JPG",
+          "https://www.shutterstock.com/image-photo/tbilisi-georgiaapril-2020-facade-georgian-600nw-1705198495.jpg",
+          "https://2022.homofaber.com/uploads/cache/msmall/1646304702_3-simon-janashia-musuem-of-georgia_facade_photo_ge.jpeg",
+          "https://www.itactravel.com/wp-content/uploads/2023/04/%D9%85%D8%AA%D8%AD%D9%81-%D8%AC%D9%88%D8%B1%D8%AC%D9%8A%D8%A7-%D8%A7%D9%84%D9%88%D8%B7%D9%86%D9%8A-1024x576.webp"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjXTFDQ/",
+        "gmaps": "https://maps.app.goo.gl/TSHZXeoLfeCc71YF6"
+      },
+      {
+        "id": "tb9",
+        "name": "حديقة النباتات الوطنية",
+        "en": "Tbilisi Botanical Garden",
+        "lat": 41.6874,
+        "lng": 44.8151,
+        "day": 3,
+        "desc": "واحة خضراء ممتدة خلف قلعة ناريكالا تضم شلالًا وجسرًا معلقًا ومسارات هادئة بين مئات الأنواع النباتية. مدخلها قريب من تمثال أم جورجيا، ويأخذ التجول الكامل فيها نحو ساعتين.",
+        "images": [
+          "https://www.omallqura.com/wp-content/uploads/2018/02/National-Botanical-Garden-of-Georgia-1.jpg",
+          "https://albatoulgroup.net/wp-content/uploads/2024/06/National-botanical-garden-of-Georgia3-2-768x473.avif",
+          "https://www.omallqura.com/wp-content/uploads/2018/02/National-Botanical-Garden-of-Georgia-1.jpg",
+          "https://www.omallqura.com/wp-content/uploads/2018/02/National-Botanical-Garden-of-Georgia-2.jpg",
+          "https://www.visitsharjah.com/media/ocmp0uja/botanicalgarden3.webp?width=750&height=450&quality=95&format=webp"
+        ],
+        "video": "https://vt.tiktok.com/ZSVj4LTVg/",
+        "gmaps": "https://maps.app.goo.gl/DcdH39ZmwFmQjW4o8",
+        "activities": [
+          {
+            "icon": "🪂",
+            "title": "نقطة هبوط زيبلاين تبليسي",
+            "desc": "هنا تنتهي رحلة الزيبلاين المنطلقة من قمة الجبل — نقطة جيدة لو تحب تشاهد غيرك ينزل قبل ما تجرب بنفسك من فوق.",
+            "duration": "—",
+            "price": "—",
+            "season": "طوال العام تقريبًا"
+          }
+        ]
+      },
+      {
+        "id": "tb10",
+        "name": "ساحة الحرية",
+        "en": "Freedom Square (Tbilisi)",
+        "lat": 41.6907,
+        "lng": 44.8014,
+        "day": 3,
+        "desc": "قلب تبليسي النابض ونقطة مرجعية مركزية، يتوسطها عمود تذكاري يعلوه تمثال القديس جورج الذهبي. منها تتفرع شوارع التسوق الرئيسية ومحطة المترو المركزية.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/ab/06/90/freedom-monument-picture.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/37/fc/85/photo3jpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/87/ea/c2/freedom-monument.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/de/d8/38/the-statue-of-freedom.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjVhUWD/",
+        "gmaps": "https://maps.app.goo.gl/rwPFYwtkcVcjmByj7",
+        "activities": [
+          {
+            "icon": "🎶",
+            "title": "نادي باسياني (Bassiani)",
+            "desc": "من أشهر نوادي التكنو في أوروبا الشرقية، يقع في مسبح ملعب دينامو تبليسي السابق تحت الأرض. مشهور عالميًا بين محبي الموسيقى الإلكترونية.",
+            "duration": "ليلة كاملة (يفتح متأخرًا)",
+            "price": "تذكرة دخول، السعر يتغير حسب الحدث",
+            "season": "عطلات نهاية الأسبوع غالبًا"
+          }
+        ]
+      },
+      {
+        "id": "tb11",
+        "name": "دير جفاري ومتسخيتا",
+        "en": "Jvari Monastery",
+        "lat": 41.8375,
+        "lng": 44.7182,
+        "day": 3,
+        "desc": "دير قديم من القرن السادس يطل من أعلى التلة على ملتقى نهري أراغفي ومتكفاري، وبجانبه مباشرة مدينة متسخيتا التاريخية، العاصمة الجورجية القديمة وموطن كاتدرائية سفيتيتسخوفيلي المدرجة ضمن التراث العالمي.",
+        "images": [
+          "https://upload.wikimedia.org/wikipedia/commons/f/f6/Monasterio_de_Jvari,_Miskheta,_Georgia,_2016-09-29,_DD_11.jpg",
+          "https://ibnbattutatravel.com/wp-content/uploads/listing-images/ibnbattuta-qVNPOrc-YfdTY-vrj.jpg",
+          "https://alqaedtravel.com/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbzB6IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--8026fa9ceb26fb63933af7bad90e3999a1e7cd51/%D8%AF%D9%8A%D8%B1%20%D8%AC%D9%81%D8%A7%D8%B1%D9%8A%20(1).webp",
+          "https://alqaedtravel.com/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBcEF6IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--a053e7d69a758eb3234e50e3bcac532a90f4dc5d/%D8%AF%D9%8A%D8%B1%20%D8%AC%D9%81%D8%A7%D8%B1%D9%8A%20(4).webp",
+          "https://upload.wikimedia.org/wikipedia/commons/f/fa/Monasterio_de_Jvari,_Miskheta,_Georgia,_2016-09-29,_DD_36.jpg"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjVuFfK/",
+        "gmaps": "https://maps.app.goo.gl/xb47MMD4cVSJ8wSJ9",
+        "activities": [
+          {
+            "icon": "🍷",
+            "title": "تذوق نبيذ في قصر شاتو موخراني",
+            "desc": "قصر وكرم نبيذ تاريخي يعود لعام ١٨٧٨ لعائلة باغراتيوني الملكية، على بعد دقائق من جفاري ومتسخيتا. يجمع بين جولة في القصر ومصنع النبيذ وجلسة تذوق.",
+            "duration": "ساعة إلى ساعتين",
+            "price": "يختلف حسب باقة التذوق",
+            "season": "طوال العام"
+          }
+        ]
+      },
+      {
+        "id": "tb12",
+        "name": "جبل مطاتسمندا",
+        "en": "Mtatsminda Park",
+        "lat": 41.6959,
+        "lng": 44.7861,
+        "day": 3,
+        "desc": "قمة تُصعد بقطار الفونيكولار التاريخي، وتضم مدينة ملاهٍ ومطعمًا دوّارًا وإطلالة بانورامية شاملة على تبليسي، وأفضل وقت لزيارتها هو غروب الشمس.",
+        "images": [
+          "https://cdn.georgia.to/img/thumbnails/6Mby9bKc6zpTuvuLdHWDZr_small.jpg",
+          "https://cdn.georgia.to/img/thumbnails/GvJRLH8cedtakefg3MaPW4_smedium.jpg",
+          "https://www.urtrips.net/wp-content/uploads/2017/03/Mtatsminda-Park1-1.jpg",
+          "https://rifgeorgia.com/wp-content/uploads/2021/03/123658-min.jpg",
+          "https://taifgeorgia.com//wp-content/uploads/2019/05/IMG_20171128_190804_849-1024x536.jpg"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjq6QFA/",
+        "gmaps": "https://maps.app.goo.gl/PXPUPZmnA5bP7vbq6",
+        "activities": [
+          {
+            "icon": "🎡",
+            "title": "ملاهي جبل مطاتسمينda",
+            "desc": "مدينة ملاهٍ فوق القمة فيها عجلة دوارة كبيرة وألعاب متنوعة تناسب الأطفال والكبار، مع مطعم دوّار يوفر إطلالة ٣٦٠ درجة على تبليسي.",
+            "duration": "ساعة إلى ساعتين",
+            "price": "تذاكر منفصلة لكل لعبة",
+            "season": "يعمل معظم أيام السنة، أفضل وقت عند الغروب"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "kazbegi",
+    "name": "كازبيجي",
+    "days": 3,
+    "center": [
+      42.63,
+      44.57
+    ],
+    "zoom": 10,
+    "landmarks": [
+      {
+        "id": "kz1",
+        "name": "الطريق العسكري الجورجي",
+        "en": "Georgian Military Road",
+        "lat": 42.4762,
+        "lng": 44.4767,
+        "day": 1,
+        "desc": "أشهر طرق جورجيا الجبلية ويربط تبليسي بكازبيجي عبر نحو 210 كم من المناظر الخلابة، ويمر بممر جفاري وقرى ريفية تقليدية على طول الطريق. شقّه الروس في القرن التاسع عشر كطريق استراتيجي عبر القوقاز.",
+        "images": [
+          "https://www.daytourguides.com/_next/image?url=https%3A%2F%2Fassets.daytourguides.com%2Fblog-images%2Fgeneral%2Fblog-images%2Fb6277be0-ee37-41ef-acef-854774602c78-a6dd10d1cc8155229bf9a27435788736.jpg&w=3840&q=75",
+          "https://eurasia.travel/wp-content/uploads/2025/04/2.-Georgian-Military-Highway.jpg",
+          "https://eurasia.travel/wp-content/uploads/2025/04/8.-Autumn-Serpantine-along-Georgian-Military-Highway.jpg",
+          "https://eurasia.travel/wp-content/uploads/2025/04/7.-Scenery-Georgian-Military-Highway.jpg",
+          "https://eurasia.travel/wp-content/uploads/2025/04/6.-Scenery-Georgian-Military-Highway.jpg"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjqhy2u/",
+        "gmaps": "https://maps.app.goo.gl/v9GKQf83qfmutxVv5",
+        "activities": [
+          {
+            "icon": "⛷️",
+            "title": "منتجع جودوري (تزلج وتلفريك)",
+            "desc": "منتجع جبلي على الطريق العسكري نفسه، يتحول شتاءً لمنتجع تزلج شهير، وصيفًا تعمل التلفريكات لنقل الزوار للقمة مع إطلالات واسعة على القوقاز.",
+            "duration": "نصف يوم تقريبًا",
+            "price": "تذاكر تلفريك/تزلج منفصلة",
+            "season": "شتاء للتزلج، صيف للتلفريك والمناظر"
+          }
+        ]
+      },
+      {
+        "id": "kz2",
+        "name": "قلعة أنانوري",
+        "en": "Ananuri",
+        "lat": 42.1656,
+        "lng": 44.6931,
+        "day": 1,
+        "desc": "مجمع قلعة تاريخي من القرن الثالث عشر يضم برجين وكنيستين، يطل على بحيرة جينفالي الفيروزية الاصطناعية. كان مقر أمراء أراغفي الإقطاعيين وشهد معارك عديدة عبر تاريخه.",
+        "images": [
+          "https://www.imtilakgroup.com/cdn-cgi/image/format=auto,fit=contain/https://imt-assets.fra1.digitaloceanspaces.com/Safaraq/posts/b8048a4dcacfcf68f6c3c8622339397f2qf_119tBc.webp",
+          "https://t3.ftcdn.net/jpg/04/78/50/96/360_F_478509683_pMiHDocsImyHUHIRbQ3AbDWnWWxe2wNU.jpg",
+          "https://t4.ftcdn.net/jpg/05/35/34/79/360_F_535347951_f8fgbqRahi4d7ADZqy9LjCnHkSOydOx4.jpg",
+          "https://einalarab.com/wp-content/uploads/2018/05/%D9%82%D9%84%D8%B9%D8%A9-%D8%A7%D9%86%D8%A7%D9%86%D9%88%D8%B1%D9%8A.jpg",
+          "https://einalarab.com/wp-content/uploads/2018/05/%D8%A8%D8%AD%D9%8A%D8%B1%D8%A9-%D8%A7%D9%86%D8%A7%D9%86%D9%88%D8%B1%D9%8A-1-1.jpg"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjbQJn8/",
+        "gmaps": "https://maps.app.goo.gl/Yoadzko7RMyDap8G9",
+        "activities": [
+          {
+            "icon": "🚤",
+            "title": "رحلة قوارب على بحيرة جينفالي",
+            "desc": "استئجار قارب صغير للتجول في مياه بحيرة جينفالي الفيروزية المحيطة بالقلعة مباشرة، أجواء هادئة ورومانسية مع إطلالة على الأسوار والمآذن من الماء.",
+            "duration": "٣٠-٦٠ دقيقة",
+            "price": "يختلف حسب مشغّل القوارب",
+            "season": "ربيع إلى خريف"
+          }
+        ]
+      },
+      {
+        "id": "kz3",
+        "name": "ممر جفاري (الصليب)",
+        "en": "Jvari Pass",
+        "lat": 42.5203,
+        "lng": 44.5386,
+        "day": 1,
+        "desc": "أعلى نقطة على الطريق العسكري الجورجي (نحو 2379م) بإطلالات جبلية واسعة على سلسلة القوقاز الكبرى، وغالبًا ما تُغطى بالثلوج حتى في الصيف.",
+        "images": [
+          "https://imgs.search.brave.com/iAN3TNmrBm_KoegtcMeeDtgfInloXk_ACdNcAfWA9PQ/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9jZG4u/Z2VvcmdpYS50by9p/bWcvdGh1bWJuYWls/cy9lRkpaanJEVXlv/bkRSeHd0bVFyVWpv/X3NtZWRpdW0uanBn",
+          "https://cdn.georgia.to/img/thumbnails/WTLiYMYUYWUmQwGDrWFysc_smedium.jpg",
+          "https://i0.wp.com/monkeystale.ca/wp-content/uploads/2025/09/dsc04392-11.jpg?resize=2091,1394&ssl=1",
+          "https://i0.wp.com/monkeystale.ca/wp-content/uploads/2025/09/dsc04392-11.jpg?resize=2091,1394&ssl=1",
+          "https://i0.wp.com/monkeystale.ca/wp-content/uploads/2025/09/dsc04392-11.jpg?resize=2091,1394&ssl=1"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjbwQhe/",
+        "gmaps": "https://maps.app.goo.gl/gce9Nb7TtgbENnH39"
+      },
+      {
+        "id": "kz4",
+        "name": "نصب الصداقة الروسية-الجورجية",
+        "en": "Russia–Georgia Friendship Monument",
+        "lat": 42.5219,
+        "lng": 44.5389,
+        "day": 1,
+        "desc": "لوحة فسيفسائية دائرية ضخمة أُقيمت عام 1983 احتفالًا بمعاهدة تاريخية بين جورجيا وروسيا، وتطل على وادي جبال القوقاز من نقطة بانورامية خلابة قرب ممر جفاري.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/01/e3/22/friendship-monument-in.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/01/1c/9e/photo4jpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/01/1c/9c/photo2jpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/01/1c/9b/photo1jpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/01/1c/9a/photo0jpg.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjgw2W3/",
+        "gmaps": "https://maps.app.goo.gl/k7V5CE6eM3gxMgfo6",
+        "activities": [
+          {
+            "icon": "🪂",
+            "title": "باراغلايدنغ ترادفي من جودوري",
+            "desc": "تطير مربوطًا بطيار مرخّص من مدرسة الباراغلايدنغ الجورجية، تنطلق من ممر جودوري بجانب نصب الصداقة مباشرة وتهبط في وادي نهر تتري أراغفي. يشمل السعر عادة الخوذة والمعدات وفيديو للرحلة.",
+            "duration": "١٠-٣٠ دقيقة طيران فعلي",
+            "price": "١٢٠-٣٠٠$ تقريبًا حسب الباقة",
+            "season": "الأفضل صيفًا وخريفًا؛ بعض المشغّلين يطيرون شتاءً لو الطقس سمح"
+          }
+        ]
+      },
+      {
+        "id": "kz5",
+        "name": "قرية ستيبانتسميندا (كازبيجي)",
+        "en": "Stepantsminda",
+        "lat": 42.6567,
+        "lng": 44.6415,
+        "day": 2,
+        "desc": "القرية الجبلية الرئيسية في المنطقة (المعروفة سابقًا باسم كازبيجي) ونقطة انطلاق جميع الأنشطة، من المشي إلى كنيسة غيرغيتي إلى رحلات وادي تروسو. ترتفع 1740م وتحيط بها قمم القوقاز من كل جانب.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/02/2d/c1/02/mount-kazbek.jpg?w=2400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/7b/03/56/small-old-church-in-the.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0c/95/a5/68/photo0jpg.jpg?w=1600&h=-1&s=1",
+          "https://cdn.georgia.to/img/thumbnails/YjcCzVJbvjuFDZZZUFNe9H_smedium.jpg",
+          "https://cdn.georgia.to/img/thumbnails/TxrXN3dJuus3k72KxYhUwA_small.jpg"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjpPE9a/",
+        "gmaps": "https://maps.app.goo.gl/b2cHJ2XSHZk6kEa79",
+        "activities": [
+          {
+            "icon": "🐎",
+            "title": "ركوب خيل حول ستيبانتسمينda",
+            "desc": "جولات خيل قصيرة أو طويلة في الوديان المحيطة بالقرية، مع مرشدين محليين يعرفون أفضل المسارات والإطلالات.",
+            "duration": "من ٣٠ دقيقة إلى نصف يوم",
+            "price": "يختلف حسب مدة الجولة",
+            "season": "ربيع إلى خريف"
+          }
+        ]
+      },
+      {
+        "id": "kz6",
+        "name": "كنيسة غيرغيتي (تسميندا صامبا)",
+        "en": "Gergeti Trinity Church",
+        "lat": 42.6625,
+        "lng": 44.6188,
+        "day": 2,
+        "desc": "الكنيسة الأيقونية من القرن الرابع عشر تقع على تلة عند ارتفاع 2170م أسفل قمة جبل كازبك مباشرة، ويصلها الزوار سيرًا (ساعة إلى ساعتين) أو بسيارة دفع رباعي. تُعد الصورة الأكثر شهرة لجورجيا في كتيبات السياحة.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/33/fb/bf/cc/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/33/fb/b4/b0/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/33/ff/6b/00/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/33/ff/6b/01/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/b0/50/df/kazbegi-area-is-a-mountains.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjpENtC/",
+        "gmaps": "https://maps.app.goo.gl/4hzhLq8Uym6ac7KD9",
+        "activities": [
+          {
+            "icon": "🐎",
+            "title": "جولة ركوب خيل من ستيبانتسمينda إلى الكنيسة",
+            "desc": "بديل ممتع عن المشي: تصعد على ظهر حصان مدرّب عبر مسارات جبلية حتى الكنيسة، مع وقفة ٢٠-٣٠ دقيقة هناك. البديل الآخر سيارة دفع رباعي بسعر ٧٠ لاري تقريبًا.",
+            "duration": "حوالي ٣ ساعات ذهابًا وإيابًا",
+            "price": "يختلف حسب المشغّل",
+            "season": "١٥ يوليو إلى ٣١ أكتوبر فقط"
+          }
+        ]
+      },
+      {
+        "id": "kz7",
+        "name": "وادي سنو",
+        "en": "Sno, Georgia",
+        "lat": 42.6063,
+        "lng": 44.6385,
+        "day": 2,
+        "desc": "قرية جبلية هادئة بأبراج دفاعية تقليدية من العصور الوسطى، ومسقط رأس بطريرك جورجيا الحالي. تشتهر أيضًا برؤوس منحوتة من الحجر لشخصيات جورجية بارزة على تلة قريبة من القرية.",
+        "images": [
+          "https://eurasia.travel/wp-content/uploads/2025/05/13.-Fortress-in-Sno-village-Georgian-Military-Highway.jpg",
+          "https://eurasia.travel/wp-content/uploads/2025/04/10.-Sno-village-Georgian-Military-Highway.jpg",
+          "https://eurasia.travel/wp-content/uploads/2025/05/14.-Alexander-Kazbegi-face-image-Sno-village-Georgian-Military-Highway.jpg",
+          "https://cnn-arabic-images.cnn.io/cloudinary/image/upload/w_1600,c_scale,q_auto/cnnarabic/2021/11/30/images/199329.jpg",
+          "https://cnn-arabic-images.cnn.io/cloudinary/image/upload/w_1600,c_scale,q_auto/cnnarabic/2021/11/30/images/199329.jpg"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjGaB7R/",
+        "gmaps": "https://maps.app.goo.gl/ui7EPEz8CQHGEUoPA",
+        "activities": [
+          {
+            "icon": "🐎",
+            "title": "ركوب خيل ومسارات مشي في سنو",
+            "desc": "القرية نقطة انطلاق جيدة لجولات خيل ومسارات مشي هادئة بين الأبراج الدفاعية التقليدية والمناظر الجبلية.",
+            "duration": "١-٣ ساعات",
+            "price": "يختلف حسب المشغّل",
+            "season": "ربيع إلى خريف"
+          }
+        ]
+      },
+      {
+        "id": "kz8",
+        "name": "وادي تروسو",
+        "en": "Truso Valley",
+        "lat": 42.5832,
+        "lng": 44.4274,
+        "day": 3,
+        "desc": "وادٍ بركاني نائم بينابيع معدنية ملونة (ترافرتين) تتدرج من الأصفر إلى البرتقالي، وبحيرة أبانو الفوّارة بغاز ثاني أكسيد الكربون. يحتاج الوصول إليه تصريحًا لقربه من الحدود الروسية.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/c2/3d/9d/truso-vallee.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/0b/bb/f7/valle.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/0b/b9/99/dall-alto.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/14/36/3a/08/img-20180730-112712-largejpg.jpg?w=800&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/10/3b/7c/2a/photo3jpg.jpg?w=2000&h=-1&s=1"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjt1d2b/",
+        "gmaps": "https://maps.app.goo.gl/j7RrQ5KQZ2BigUQt8"
+      },
+      {
+        "id": "kz9",
+        "name": "وادي ديفدوراكي",
+        "en": "Devdoraki Glacier",
+        "lat": 42.6394,
+        "lng": 44.5975,
+        "day": 3,
+        "desc": "نهر جليدي عند سفح جبل كازبك من الجهة الشمالية الشرقية، شهد انهيارات جليدية تاريخية غيّرت مجرى نهر تيرغي أكثر من مرة. مقصد لمحبي المشي في التضاريس الجبلية القاسية.",
+        "images": [
+          "https://png.pngtree.com/thumb_back/fh260/background/20220310/pngtree-valley-town-and-majestic-mountain-panorama-poland-town-mountains-photo-image_23977048.jpg",
+          "https://png.pngtree.com/thumb_back/fh260/background/20220515/pngtree-gr%C3%B6dnerjoch-panorama-hochgebirge-tal-hochebene-photo-image_13516120.jpg",
+          "https://png.pngtree.com/thumb_back/fh260/background/20220117/pngtree-unwinding-amidst-a-stunning-mountain-and-valley-panorama-photo-image_26189212.jpg",
+          "https://png.pngtree.com/thumb_back/fh260/background/20221107/pngtree-the-sacred-valley-peru-panorama-america-photo-image_9129622.jpg",
+          "https://png.pngtree.com/thumb_back/fh260/background/20220501/pngtree-valley-lakes-with-mountain-range-panorama-rock-sky-tourism-photo-image_24292162.jpg"
+        ],
+        "video": null,
+        "gmaps": "https://maps.app.goo.gl/DeCAjo5i6uq1Q5gu9"
+      },
+      {
+        "id": "kz10",
+        "name": "جبل كازبك (نقطة إطلالة)",
+        "en": "Mount Kazbek",
+        "lat": 42.6956,
+        "lng": 44.5189,
+        "day": 3,
+        "desc": "ثالث أعلى قمم جورجيا (5054م) وبركان خامد مغطى بالجليد الدائم، ومحور أساطير جورجية عديدة أبرزها أسطورة أميراني (بروميثيوس الجورجي). تُرى قمته بوضوح من ستيبانتسمينda وكنيسة غيرغيتي في الأيام الصافية.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/08/77/98/35/caption.jpg?w=2000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/2a/86/ab/caption.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2c/86/b6/44/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/29/de/ca/64/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/29/de/ca/60/caption.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://vt.tiktok.com/ZSVjn3Wnw/",
+        "gmaps": "https://maps.app.goo.gl/7JFuXDc1y7n11Xof8",
+        "activities": [
+          {
+            "icon": "🧗",
+            "title": "تسلق جليدي على سفوح كازبك",
+            "desc": "نشاط للمغامرين المتمرسين فقط، يحتاج مرشدين ومعدات متخصصة نظرًا لصعوبة التضاريس الجليدية على البركان الخامد.",
+            "duration": "يوم كامل أو أكثر",
+            "price": "يحتاج حجز مسبق مع شركة تسلق متخصصة",
+            "season": "شتاء بشكل أساسي"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "kutaisi",
+    "name": "كوتايسي",
+    "days": 1,
+    "center": [
+      42.32,
+      42.66
+    ],
+    "zoom": 11,
+    "landmarks": [
+      {
+        "id": "ku1",
+        "name": "كاتدرائية باغراتي",
+        "en": "Bagrati Cathedral",
+        "lat": 42.2744,
+        "lng": 42.7114,
+        "day": 1,
+        "desc": "كاتدرائية من القرن الحادي عشر بناها الملك باغرات الثالث، وتُعد رمز توحيد جورجيا، تطل على كوتايسي من تلة أوكيميريوني. أُدرجت ثم استُبعدت من قائمة التراث العالمي بسبب أعمال ترميم مثيرة للجدل اكتملت عام 2012.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/10/36/f2/38/bagrati-cathedral.jpg?w=2000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/10/0d/2d/3c/the-place.jpg?w=2000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/10/0d/2d/2f/view-of-the-town-from.jpg?w=2000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0f/35/0a/cb/caption.jpg?w=2000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/d0/d1/3e/20170325-165357-largejpg.jpg?w=2000&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@sakartveloskyviews/video/7664801176000449799?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/zXQcFhWUKiM6zUm19"
+      },
+      {
+        "id": "ku2",
+        "name": "دير غيلاتي",
+        "en": "Gelati Monastery",
+        "lat": 42.3117,
+        "lng": 42.7364,
+        "day": 1,
+        "desc": "مجمع أديرة تاريخي أسسه الملك داود الباني عام 1106، وكان مركزًا علميًا ودينيًا كبيرًا يُعرف بـ\"أثينا الجديدة\". تضم كنيسته الرئيسية فسيفساء وجداريات من القرون الوسطى محفوظة بحالة جيدة.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/0a/1f/43/xi.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2a/68/52/b9/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/28/5c/c3/0c/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/28/0e/d1/29/gelati-monastery-of-12th.jpg?w=1200&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/20/3c/42/d8/caption.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@doctor_vozhakov/video/7113418123566681345?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/fCrUG4PwhtCMfCfAA"
+      },
+      {
+        "id": "ku3",
+        "name": "كهوف بروميثيوس",
+        "en": "Prometheus Cave, Georgia",
+        "lat": 42.3922,
+        "lng": 42.6242,
+        "day": 1,
+        "desc": "كهف ضخم بطول يتجاوز 6 كم (المفتوح منه نحو 1.4 كم) بتشكيلات صخرية مضاءة بالألوان، وتنتهي الجولة برحلة قارب قصيرة. يحافظ على درجة حرارة ثابتة تقريبًا طوال العام.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1b/65/f7/d3/prometheus-cave-formed.jpg?w=900&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1b/0a/12/da/prometheus-cave-is-located.jpg?w=600&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1a/b1/1d/d2/photo4jpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1a/40/ee/47/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/ac/3c/f2/photo3jpg.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@king.world.travel/video/7672089920957107476?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/RJ1K9QCijLv5Rm7M9",
+        "activities": [
+          {
+            "icon": "🦖",
+            "title": "كهف ومحمية ساتابليا الطبيعية",
+            "desc": "محمية طبيعية قريبة من كهف بروميثيوس، تضم كهفًا مضاءً بطول ٣٠٠ متر فيه آثار أقدام ديناصورات حقيقية، ومنصة زجاجية شفافة تطل على الغابة والمحمية من الخارج.",
+            "duration": "ساعة إلى ساعة ونصف",
+            "price": "رسوم دخول منفصلة عن بروميثيوس",
+            "season": "طوال العام"
+          }
+        ]
+      },
+      {
+        "id": "ku4",
+        "name": "كانيون مارتفيلي",
+        "en": "Martvili Canyon",
+        "lat": 42.4181,
+        "lng": 42.3922,
+        "day": 1,
+        "desc": "كانيون أخضر عميق بمياه فيروزية شفافة، وسلسلة شلالات صغيرة تنتهي برحلة قارب تجديف هادئة بين جدران الصخر. يقع على بعد نحو ساعة من كوتايسي.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/6f/d7/e3/martvili-canyons-georgia.jpg?w=1000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/6f/d7/61/martvili-canyons-georgia.jpg?w=1200&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/33/05/24/takie-cuda.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/32/fe/64/przecudnie.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/df/b4/cc/martvili-canyons.jpg?w=1100&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@yusifov85/video/7662112956229881109?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/fp2vp7RgtSAxCeNUA",
+        "activities": [
+          {
+            "icon": "🚶",
+            "title": "كانيون أوكاتسي (Okatse)",
+            "desc": "مسار مشي معدني معلّق يمتد على طول حافة جرف عميق، بإطلالات مهيبة على الوادي الأخضر أسفله. تجربة مختلفة عن ركوب القوارب في مارتفيلي.",
+            "duration": "ساعة إلى ساعة ونصف مشي",
+            "price": "رسوم دخول رمزية",
+            "season": "ربيع إلى خريف (قد يُغلق شتاءً لخطورة الجليد)"
+          }
+        ]
+      },
+      {
+        "id": "ku5",
+        "name": "السوق المركزي (الخضار)",
+        "en": "Kutaisi",
+        "lat": 42.2679,
+        "lng": 42.7189,
+        "day": 1,
+        "desc": "سوق كوتايسي الشعبي المفعم بالحياة، حيث تُباع التوابل والجبن الجورجي والفواكه المحلية والخبز التقليدي جنبًا إلى جنب. مكان ممتاز لتجربة نكهات المطبخ الإيميريتي الأصيلة والتفاعل مع الباعة المحليين.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/21/bf/97/20190904-130557-largejpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/13/08/2a/scorcio-dell-interno.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/13/08/19/distesa-di-churchkela.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/b4/b7/01/kutaisi-market.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/7f/c5/21/mercado-de-kutaisi-luz.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@travelwithluxx/video/7494959812652911894?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/MiNK98TRVqMeTtuu8"
+      },
+      {
+        "id": "ku6",
+        "name": "دير موتساميتا",
+        "en": "Motsameta Monastery",
+        "lat": 42.3009,
+        "lng": 42.7405,
+        "day": 1,
+        "desc": "دير صغير على منحدر صخري حاد يطل على انحناء نهر تسخالتسيتيلا، مخصص لتكريم أميرين استُشهدا دفاعًا عن جورجيا في القرن الثامن. المكان هادئ جدًا ومناسب للتأمل والصور البانورامية.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1a/b6/f3/12/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1a/6a/f1/07/464133708-352061-largejpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/fd/b6/85/photo1jpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/aa/c5/02/motsameta-1024x768-l6g.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/1a/95/f1/photo3jpg.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@adamidesaerials/video/7456750724156820758?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/1PuL5D5ZZtXYavML8"
+      },
+      {
+        "id": "ku7",
+        "name": "حديقة كوتايسي المركزية",
+        "en": "Kutaisi",
+        "lat": 42.2686,
+        "lng": 42.7147,
+        "day": 1,
+        "desc": "حديقة المدينة الرئيسية في وسط كوتايسي بنافورتها الموسيقية المضيئة مساءً، ومكان تجمع شعبي للعائلات خصوصًا في المساء الصيفي.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/1f/1a/3d/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/1f/1a/3f/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/1f/1a/41/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/56/7b/57/central-city-park-kutaisi.jpg?w=800&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/56/7b/5b/central-city-park-kutaisi.jpg?w=1000&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@dariaa28087/video/7524044437551353119?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/itDm2y4oGkViyYHG8"
+      },
+      {
+        "id": "ku8",
+        "name": "جسر الملكة تمار الأبيض",
+        "en": "Kutaisi",
+        "lat": 42.2703,
+        "lng": 42.7135,
+        "day": 1,
+        "desc": "جسر مشاة أبيض أنيق يعبر نهر ريوني في قلب كوتايسي، ويربط الضفتين قرب السوق المركزي والحديقة الرئيسية، ويُعد نقطة تصوير جميلة عند الغروب.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/00/4b/ef/3.jpg?w=1400&h=-1&s=1",
+          "https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/2FA2/production/_129049121_tamargettyresize.jpg",
+          "https://media.gettyimages.com/id/503229017/photo/the-royal-albert-bridge-and-tamar-bridge-over-the-river-tamar-in-saltash-between-cornwall-and.jpg?s=612x612&w=0&k=20&c=kEjyWIC2ozHNW_B52R_mQ0BE5gxMiw2ZJ_xJEop4m80=",
+          "https://historicbridges.org/unitedkingdom/tamarbridge/little_tamarbridge_5529_30_31v.jpg",
+          "https://talesfromthebraziersgrotto.wordpress.com/wp-content/uploads/2022/04/4.-tamar-bridge-saltash-29-may-2016..jpg"
+        ],
+        "video": "https://www.tiktok.com/@wonderfulwander/video/7330086305310821665?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/XRm5oCyFSc3xroWt6"
+      }
+    ]
+  },
+  {
+    "id": "batumi",
+    "name": "باتومي",
+    "days": 3,
+    "center": [
+      41.65,
+      41.64
+    ],
+    "zoom": 13,
+    "landmarks": [
+      {
+        "id": "ba1",
+        "name": "واجهة باتومي البحرية",
+        "en": "Batumi Boulevard",
+        "lat": 41.658,
+        "lng": 41.639,
+        "day": 1,
+        "desc": "كورنيش بحري ممتد أكثر من 7 كم على ساحل البحر الأسود بأجواء استوائية ونخيل، ويضم مسارات مشي ودراجات ونوافير وتماثيل، من أشهرها \"علي ونينو\" المتحركان.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0f/9c/93/2b/20170611-185137-largejpg.jpg?w=2400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0c/e9/84/1e/photo2jpg.jpg?w=1400&h=800&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/07/d3/8b/ac/piazza-square.jpg?w=1400&h=800&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1a/77/d1/1b/europe-square-the-majestic.jpg?w=1400&h=800&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/34/24/5a/dd/caption.jpg?w=1100&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@georgiain_tour/video/7615653147930922261?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/m1WnngLQ9UU1sVFE9",
+        "activities": [
+          {
+            "icon": "💦",
+            "title": "أكوا بارك باتومي",
+            "desc": "أكبر حديقة ألعاب مائية في المدينة، فيها منزلقات كبيرة مثل 'الدوامة العملاقة' ومنطقة مخصصة وآمنة لألعاب الأطفال الصغار.",
+            "duration": "نصف يوم إلى يوم كامل",
+            "price": "تذكرة دخول يومية",
+            "season": "صيف بشكل أساسي"
+          },
+          {
+            "icon": "🚤",
+            "title": "تأجير جت سكي على الكورنيش",
+            "desc": "تأجير دراجات مائية مباشرة من الكورنيش مع جولات مصحوبة بمرشدين تمر بإطلالات على برج الأبجدية وشارع باتومي، مع أجهزة GPS وسلامة للطوارئ.",
+            "duration": "حسب الباقة المختارة",
+            "price": "يختلف حسب مدة الإيجار",
+            "season": "صيف بشكل أساسي"
+          },
+          {
+            "icon": "💦",
+            "title": "أكوا بارك باتومي",
+            "desc": "أكبر حديقة ألعاب مائية في المدينة، فيها منزلقات كبيرة مثل 'الدوامة العملاقة' ومنطقة مخصصة وآمنة لألعاب الأطفال الصغار.",
+            "duration": "نصف يوم إلى يوم كامل",
+            "price": "تذكرة دخول يومية",
+            "season": "صيف بشكل أساسي"
+          },
+          {
+            "icon": "🚤",
+            "title": "تأجير جت سكي على الكورنيش",
+            "desc": "تأجير دراجات مائية مباشرة من الكورنيش مع جولات مصحوبة بمرشدين تمر بإطلالات على برج الأبجدية وشارع باتومي، مع أجهزة GPS وسلامة للطوارئ.",
+            "duration": "حسب الباقة المختارة",
+            "price": "يختلف حسب مدة الإيجار",
+            "season": "صيف بشكل أساسي"
+          },
+          {
+            "icon": "🚡",
+            "title": "تلفريك أرجو (Argo)",
+            "desc": "ينطلق من الواجهة البحرية صعودًا لقمة جبل آنوريا (٢٥٠م) في رحلة ٢.٥ كم تستغرق ١٥-٢٠ دقيقة، مع مطعم ومجمع ترفيهي وثقافي عند القمة وإطلالة كاملة على باتومي والبحر الأسود.",
+            "duration": "١٥-٢٠ دقيقة للرحلة + وقت عند القمة",
+            "price": "تذكرة ذهاب وعودة",
+            "season": "طوال العام، الأفضل عند الغروب"
+          }
+        ]
+      },
+      {
+        "id": "ba2",
+        "name": "ساحة أوروبا",
+        "en": "Europe Square, Batumi",
+        "lat": 41.6465,
+        "lng": 41.6367,
+        "day": 1,
+        "desc": "ساحة أنيقة تجمع العمارة الأوروبية الكلاسيكية في قلب باتومي، ويتوسطها عمود ميديا الذهبي رمزًا لأسطورة الصوف الذهبي الجورجية. محاطة بمقاهٍ ومبانٍ تاريخية مرممة.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0d/c4/d9/90/caption.jpg?w=2000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/33/50/c2/e6/europe-square.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/33/18/e0/04/caption.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/a3/97/dc/caption.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/9d/2b/bd/tesadufen-sonbahar-festivali.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@kro0omaa/video/7545478195210947847?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/hXCZ2cZ6UGyxvdPH9"
+      },
+      {
+        "id": "ba3",
+        "name": "برج الأبجدية الجورجية",
+        "en": "Alphabet Tower",
+        "lat": 41.6494,
+        "lng": 41.6376,
+        "day": 1,
+        "desc": "برج بارتفاع 130م يحمل حروف الأبجدية الجورجية الـ33 بتصميم حلزوني يشبه الحمض النووي، ويضم مطعمًا دوّارًا ومنصة مراقبة تدور 360 درجة على القمة.",
+        "images": [
+          "https://tury.club/turyclub.img.php?src=7786c37b1057e8daa197cb1d7cc8aec7/oth1yMS4/uDfCPQGBzC.jpg&img=cb1191bd04f5c314362efb89bb78c2bc&.jpg",
+          "https://tury.club/turyclub.img.php?src=7786c37b1057e8daa197cb1d7cc8aec7/cVPMFSq_/AyfOSjPHUW.jpg&img=db05cd35a6a6dfc28460143ddc07b970&.jpg",
+          "https://media.gettyimages.com/id/868834794/photo/the-inner-view-of-batumi-alphabetical-tower.jpg?s=612x612&w=0&k=20&c=DfYwQtWxeKlspRxf88j2h1XWCvvTtkHat6wpbTaVfGQ=",
+          "https://tury.club/turyclub.img.php?src=7786c37b1057e8daa197cb1d7cc8aec7/Y2E9LH5d/k2cEP1vNlm.jpg&img=76a842f9d244f749f44d81b0ef1049b5&.jpg",
+          "https://tury.club/turyclub.img.php?src=7786c37b1057e8daa197cb1d7cc8aec7/-55SKF3n/b3Nm0X2fg8.jpg&img=1afeac308c7d7fcdb88380eca6a00e0b&.jpg"
+        ],
+        "video": "https://www.tiktok.com/@travel_with_gelo/video/7503420639462575390?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/L7w9QUxDE3mWWqSY8"
+      },
+      {
+        "id": "ba4",
+        "name": "تمثال علي ونينو المتحرك",
+        "en": "Ali and Nino (sculpture)",
+        "lat": 41.6578,
+        "lng": 41.6395,
+        "day": 1,
+        "desc": "تمثالان معدنيان متحركان بارتفاع 8 أمتار يقتربان ويندمجان في شكل واحد ثم يفترقان كل عشر دقائق، مستوحيان من قصة حب مأساوية بين فتى أذربيجاني وفتاة جورجية.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/33/fc/51/26/caption.jpg?w=1000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/25/1f/c4/8e/caption.jpg?w=800&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/cb/a8/b4/photo2jpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/f7/75/b7/photo5jpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/f2/7d/11/img-20190612-180101-largejpg.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@arts_help/video/7238659542454734086?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/2cRxRLuyYuUdTwEt9"
+      },
+      {
+        "id": "ba5",
+        "name": "البلدة القديمة والميناء",
+        "en": "Batumi",
+        "lat": 41.6462,
+        "lng": 41.6395,
+        "day": 2,
+        "desc": "أزقة باتومي القديمة قرب الميناء بمقاهيها ومبانيها التراثية من أواخر القرن التاسع عشر، حين كانت المدينة ميناءً مزدهرًا على طريق النفط من باكو.",
+        "images": [
+          "https://media.cntravellerme.com/photos/689f1c1e2fbce89cb03a29ac/master/w_1600,c_limit/1155533439",
+          "https://media.gettyimages.com/id/840190342/photo/an-aerial-photo-taken-on-august-27-2017-shows-a-view-of-the-black-sea-port-city-of-batumi-afp.jpg?s=612x612&w=0&k=20&c=qB0gKji_pEfHNfAg9pOJuxNyiNULdFklFWbHHynRhRQ=",
+          "https://media.gettyimages.com/id/976487488/photo/old-town-and-seaport-batumi-georgia.jpg?s=612x612&w=0&k=20&c=MQ019lNkkDowVFhfNUZ4CmyCh1C70jInylKciQaqTO8=",
+          "https://media.cntravellerme.com/photos/689f1c1e2fbce89cb03a29ac/master/w_1600,c_limit/1155533439",
+          "https://t4.ftcdn.net/jpg/01/36/55/75/360_F_136557544_WxNXUszvReQDKkAzuCFVdNn5ZewAjZz6.jpg"
+        ],
+        "video": "https://www.tiktok.com/@www.galactic/video/7559493538652638465?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/E2868pP79LM1qZLC6",
+        "activities": [
+          {
+            "icon": "🍸",
+            "title": "حانات وبارات قرب الميناء القديم",
+            "desc": "البلدة القديمة قرب الميناء فيها حانات ومطاعم بطابع أوروبي من أواخر القرن التاسع عشر، تنشط مساءً وتناسب أمسية هادئة بعد يوم استكشاف.",
+            "duration": "مسائي",
+            "price": "يختلف حسب المكان",
+            "season": "طوال السنة، أفضل صيفًا"
+          }
+        ]
+      },
+      {
+        "id": "ba6",
+        "name": "حديقة باتومي النباتية",
+        "en": "Batumi Botanical Garden",
+        "lat": 41.7167,
+        "lng": 41.7231,
+        "day": 2,
+        "desc": "من أجمل الحدائق النباتية في العالم، تمتد على منحدرات ساحلية مطلة على البحر الأسود وتضم مناطق مناخية من عدة قارات مختلفة. تحتاج زيارتها الكاملة نحو ثلاث ساعات مشي.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0c/3d/ef/f5/caption.jpg?w=1200&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/04/11/c5/c1/batumi-botanical-gardens.jpg?w=1100&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/34/22/25/9c/caption.jpg?w=900&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/34/22/25/9b/caption.jpg?w=1200&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/33/f2/8d/35/caption.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@fidanismail__/video/7671005434618236180?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/E3eahcoksE68pi5j8"
+      },
+      {
+        "id": "ba7",
+        "name": "حديقة الدلافين",
+        "en": "Batumi",
+        "lat": 41.659,
+        "lng": 41.641,
+        "day": 2,
+        "desc": "عروض دلافين ترفيهية وتفاعلية على كورنيش المدينة، مناسبة للعائلات والأطفال، مع إمكانية السباحة مع الدلافين مقابل رسوم إضافية.",
+        "images": [
+          "https://media.gettyimages.com/id/2168092790/photo/the-dolphinarium-at-the-oltremare-park-in-riccione-italy-on-august-22-2024-oltremare-is-an.jpg?s=612x612&w=0&k=20&c=uI8dutKI7m1vzsNQchSRcLOrCsnRpSuss2gNCjPhqfQ=",
+          "https://georgiaabout.com/wp-content/uploads/2013/07/bottlenose-dolphins-at-batumi-dolphinarium-photo-courtesy-of-6-may-park.jpg?w=640&h=480",
+          "https://georgiaabout.com/wp-content/uploads/2013/07/dolphin-trainers-photo-courtesy-of-6-may-park.jpg?w=640&h=478",
+          "https://georgiaabout.com/wp-content/uploads/2013/07/bottlenose-dolphins-performing-photo-courtesy-of-6-may-park.jpg?w=640&h=479",
+          "https://www.urtrips.com/wp-content/uploads/2017/03/Dolphinarium-batumi.jpg"
+        ],
+        "video": "https://www.tiktok.com/@bernnkt/video/7656129374713892117?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/GkaT14wQSFeFAt6v8"
+      },
+      {
+        "id": "ba8",
+        "name": "ساحة بيازا وسوق باتومي",
+        "en": "Batumi",
+        "lat": 41.647,
+        "lng": 41.635,
+        "day": 2,
+        "desc": "ساحة مزخرفة بفسيفساء وطراز يستلهم البندقية، تنبض بالحياة مساءً بمقاهيها ومطاعمها ومحالها التقليدية، ومكان جيد لتجربة النبيذ الجورجي المحلي.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/07/d3/8b/ca/piazza-square.jpg?w=2000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/08/55/21/c4/piazza-square.jpg?w=1600&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/08/55/21/fd/piazza-square.jpg?w=1000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/08/cb/13/51/piazza-square.jpg?w=2000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0a/fd/76/58/photo2jpg.jpg?w=2000&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@bahuabuabua/video/7174620756784041242?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/f6fLpVHFu7WVWg2q8"
+      },
+      {
+        "id": "ba9",
+        "name": "قلعة غونيو",
+        "en": "Gonio Fortress",
+        "lat": 41.5722,
+        "lng": 41.5822,
+        "day": 3,
+        "desc": "حصن روماني قديم يعود للقرن الأول الميلادي قرب الحدود التركية، ويُقال إنه يضم ضريح الرسول متياس أحد حواريي المسيح. من أهم المواقع الأثرية في أدجارا.",
+        "images": [
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0c/9d/e9/ba/caption.jpg?w=2000&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1a/5d/48/83/gonio-georgia-apsaros.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/62/d8/eb/photo3jpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/c6/22/65/gruzja-gonio5-largejpg.jpg?w=1400&h=-1&s=1",
+          "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/f2/0b/bb/caption.jpg?w=1400&h=-1&s=1"
+        ],
+        "video": "https://www.tiktok.com/@xalaa2018/video/7537830936570760456?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/8FyT7VbcXgSbkq6q8"
+      },
+      {
+        "id": "ba10",
+        "name": "شلالات ماخونتسيتي",
+        "en": "Makhuntseti",
+        "lat": 41.6664,
+        "lng": 41.9219,
+        "day": 3,
+        "desc": "شلال طبيعي بارتفاع نحو 30 مترًا يقع بجانب جسر حجري قديم مقوس من عهد الملكة تمار، ويحيط به بساتين الحمضيات والشاي الجورجي.",
+        "images": [
+          "https://www.api.travel-georgia.club/uploads/small_makhuntseti_travel_georgia_shalom_9cc1fe4f9c.jpg",
+          "https://www.api.travel-georgia.club/uploads/small_makhuntseti_waterfall_batumi_travel_georgia_shalom_b53bb40d93.jpg",
+          "https://www.api.travel-georgia.club/uploads/small_makhuntseti_travel_georgia_shalom_9cc1fe4f9c.jpg",
+          "https://cdn.georgia.to/img/thumbnails/Rt2YieUR7RfpkU9VxDMB9a_smedium.jpeg",
+          "https://i1.wp.com/bptrip.ru/wp-content/uploads/2016/01/Makhuntseti-Waterwall.jpg"
+        ],
+        "video": "https://www.tiktok.com/@lulublacksea/video/7497679082507848967?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/JvQPag2bJRFpuqP46"
+      },
+      {
+        "id": "ba12",
+        "name": "قرية كيدا الجبلية",
+        "en": "Keda Municipality",
+        "lat": 41.6011,
+        "lng": 41.8814,
+        "day": 3,
+        "desc": "بلدة جبلية هادئة في أدجارا، بوابة إلى الطبيعة الجبلية وبساتين الشاي والحمضيات، ونقطة انطلاق جيدة لرحلات يوم كامل نحو قرى الجبال الداخلية.",
+        "images": [
+          "https://georgiatoday.ge/wp-content/uploads/2021/02/ked00-537x375.jpg",
+          "https://againstthecompass.com/wp-content/uploads/2022/09/Mosiashvilebi-Mosiashvilebi-Georgia-The-views-from-our-guest-house-under-Mosiashvilebi-section-1024x684.jpg",
+          "https://media.gettyimages.com/id/507706854/photo/tea-plantation-in-india.jpg?s=612x612&w=0&k=20&c=tQVeUpgp3hsxzzEab0JUPLe7jfg2YFtLcCgfvSQKNbk=",
+          "https://media.gettyimages.com/id/507707516/photo/tea-plantation-in-india.jpg?s=612x612&w=0&k=20&c=6Z5RcY0ab9Bnj_xco0lkAEX5Sgs6QSTlK9kXIe8GiXg=",
+          "https://media.gettyimages.com/id/507691606/photo/woman-on-tea-plantation-in-india.jpg?s=612x612&w=0&k=20&c=5UnzPkh73Nql5AuZ_jTL_5WCfYESwQ7vD14frBuwsCE="
+        ],
+        "video": "https://www.tiktok.com/@kedatourismdevelopmentc1/video/7649778781485337876?is_from_webapp=1&sender_device=pc&web_id=7674935491238807047",
+        "gmaps": "https://maps.app.goo.gl/msDpQmiw67AZNskz7"
+      }
+    ]
+  }
+];
+
+/* ================= STATE ================= */
+const STORAGE_KEY = 'ge_trip_visited_v1';
+let visited = {};
+try{ visited = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }catch(e){ visited = {}; }
+function saveVisited(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(visited)); }catch(e){} }
+
+const viewMode = {}; // cityId -> 'day' | 'list'
+CITIES.forEach(c=>viewMode[c.id]='day');
+
+const mapInstances = {};
+const mapBounds = {};
+const markerRefs = {}; // landmarkId -> leaflet marker
+const cardRefs = {}; // landmarkId -> card DOM element
+let activeCity = CITIES[0].id;
+
+/* ================= RENDER SHELL ================= */
+const tabsEl = document.getElementById('tabs');
+const mainEl = document.getElementById('main');
+
+function totalLandmarks(){ return CITIES.reduce((s,c)=>s+c.landmarks.length,0); }
+function visitedCountOf(city){ return city.landmarks.filter(l=>visited[l.id]).length; }
+function totalVisited(){ return CITIES.reduce((s,c)=>s+visitedCountOf(c),0); }
+
+function scrollToActive(){
+  const sec = document.getElementById('sec-'+activeCity);
+  if(sec) sec.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function buildSections(){
+  mainEl.innerHTML = CITIES.map(c=>`
+    <section class="city-section ${c.id===activeCity?'active':''}" id="sec-${c.id}">
+      <div class="city-head">
+        <div>
+          <h2>${c.name}</h2>
+          <div class="meta">${c.landmarks.length} معلمًا سياحيًا · إقامة ${c.days} ${c.days>1?'أيام':'يوم'}</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar"><span id="bar-${c.id}" style="width:0%"></span></div>
+          <div class="progress-label" id="lbl-${c.id}"></div>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="view-toggle">
+          <button data-mode="day" data-city="${c.id}">حسب الأيام</button>
+          <button data-mode="list" data-city="${c.id}">قائمة كاملة</button>
+        </div>
+        <button class="reset-btn" data-reset="${c.id}">↺ إعادة تعيين هذه المدينة</button>
+      </div>
+      <div class="map" id="map-${c.id}"></div>
+      <div class="grid" id="grid-${c.id}"></div>
+    </section>
+  `).join('');
+
+  mainEl.querySelectorAll('.view-toggle button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      viewMode[btn.dataset.city] = btn.dataset.mode;
+      renderCards(CITIES.find(c=>c.id===btn.dataset.city));
+      updateToggleButtons(btn.dataset.city);
+    });
+  });
+  mainEl.querySelectorAll('[data-reset]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const cityId = btn.dataset.reset;
+      const city = CITIES.find(c=>c.id===cityId);
+      if(!confirm('هل تريد إعادة تعيين كل معالم '+city.name+' كغير مُزارة؟')) return;
+      city.landmarks.forEach(l=>{ delete visited[l.id]; refreshMarkerIcon(l.id); });
+      saveVisited();
+      renderCards(city);
+      updateToggleButtons(cityId);
+      updateProgress(city);
+      buildTabs();
+      updateHeaderStamps();
+    });
+  });
+}
+
+function updateToggleButtons(cityId){
+  document.querySelectorAll(`.view-toggle button[data-city="${cityId}"]`).forEach(b=>{
+    b.classList.toggle('active', b.dataset.mode===viewMode[cityId]);
+  });
+}
+
+/* ================= MAP ================= */
+function ensureMap(city){
+  if(mapInstances[city.id]) return mapInstances[city.id];
+  const map = L.map('map-'+city.id, {scrollWheelZoom:false});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'&copy; OpenStreetMap contributors', maxZoom:18
+  }).addTo(map);
+
+  const ordered = [...city.landmarks].sort((a,b)=> a.day-b.day || a.id.localeCompare(b.id));
+  const latlngs = [];
+  ordered.forEach((l,idx)=>{
+    const icon = L.divIcon({
+      className:'', html:`<div style="background:${visited[l.id]?'#C79A3D':'#6B1E2B'};color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;font-weight:800;font-size:12px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)">${idx+1}</div>`,
+      iconSize:[26,26], iconAnchor:[13,13]
+    });
+    const marker = L.marker([l.lat,l.lng], {icon}).addTo(map)
+      .bindPopup(`<b>${l.name}</b><br>اليوم ${l.day}`);
+    marker.on('click', ()=> focusCard(l.id));
+    markerRefs[l.id] = {marker, city};
+    latlngs.push([l.lat,l.lng]);
+  });
+  L.polyline(latlngs, {color:'#2F6E6A', weight:2, dashArray:'6,6', opacity:.7}).addTo(map);
+  const bounds = L.latLngBounds(latlngs);
+  map.fitBounds(bounds, {padding:[28,28]});
+  mapInstances[city.id] = map;
+  mapBounds[city.id] = bounds;
+  return map;
+}
+
+function refreshMarkerIcon(landmarkId){
+  const ref = markerRefs[landmarkId];
+  if(!ref) return;
+  const ordered = [...ref.city.landmarks].sort((a,b)=> a.day-b.day || a.id.localeCompare(b.id));
+  const idx = ordered.findIndex(l=>l.id===landmarkId);
+  const l = ref.city.landmarks.find(x=>x.id===landmarkId);
+  const icon = L.divIcon({
+    className:'', html:`<div style="background:${visited[landmarkId]?'#C79A3D':'#6B1E2B'};color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;font-weight:800;font-size:12px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)">${idx+1}</div>`,
+    iconSize:[26,26], iconAnchor:[13,13]
+  });
+  ref.marker.setIcon(icon);
+}
+
+/* Map ↔ card linking: clicking a marker jumps to its card, and vice versa. */
+function focusCard(landmarkId){
+  const card = cardRefs[landmarkId];
+  if(!card) return;
+  card.scrollIntoView({behavior:'smooth', block:'center'});
+  card.classList.add('flash');
+  setTimeout(()=> card.classList.remove('flash'), 1400);
+}
+function focusMarker(landmarkId){
+  const ref = markerRefs[landmarkId];
+  if(!ref) return;
+  const map = mapInstances[ref.city.id];
+  if(!map) return;
+  document.getElementById('map-'+ref.city.id).scrollIntoView({behavior:'smooth', block:'center'});
+  map.setView(ref.marker.getLatLng(), Math.max(map.getZoom(), 15), {animate:true});
+  setTimeout(()=> ref.marker.openPopup(), 400);
+}
+
+/* Category for each landmark → drives the built-in illustration used as a fallback
+   behind the real photos (or on its own if a landmark has no photos yet). */
+const CAT_BY_ID = {
+  tb1:'city',tb2:'fortress',tb3:'cablecar',tb4:'bath',tb5:'bridge',tb6:'church',tb7:'monument',tb8:'museum',tb9:'garden',tb10:'city',tb11:'church',tb12:'mountain',
+  kz1:'mountain',kz2:'fortress',kz3:'mountain',kz4:'monument',kz5:'city',kz6:'church',kz7:'mountain',kz8:'nature',kz9:'mountain',kz10:'mountain',
+  ku1:'church',ku2:'church',ku3:'cave',ku4:'nature',ku5:'market',ku6:'church',ku7:'garden',ku8:'bridge',
+  ba1:'beach',ba2:'museum',ba3:'tower',ba4:'monument',ba5:'city',ba6:'garden',ba7:'dolphin',ba8:'market',ba9:'fortress',ba10:'waterfall',ba12:'mountain'
+};
+CITIES.forEach(c=>c.landmarks.forEach(l=>{ l.cat = CAT_BY_ID[l.id] || 'city'; }));
+
+/* ================= ILLUSTRATIONS (inline SVG — built into the file, no network at all) ================= */
+const SVG_WRAP = (inner)=> `<svg viewBox="0 0 140 90" width="72%" height="72%" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+const W='#6B1E2B', WS='#8C3145', G='#C79A3D', T='#2F6E6A', I='#6b6157';
+const CATEGORY_SVG = {
+  city: SVG_WRAP(`<rect x="18" y="38" width="16" height="42" fill="${W}"/><rect x="38" y="24" width="18" height="56" fill="${WS}"/><rect x="60" y="42" width="15" height="38" fill="${W}"/><rect x="79" y="18" width="20" height="62" fill="${WS}"/><rect x="103" y="34" width="17" height="46" fill="${W}"/><rect x="0" y="80" width="140" height="3" fill="${I}" opacity=".4"/>`),
+  fortress: SVG_WRAP(`<rect x="26" y="34" width="16" height="46" fill="${W}"/><rect x="24" y="24" width="5" height="10" fill="${W}"/><rect x="33" y="24" width="5" height="10" fill="${W}"/><rect x="42" y="24" width="5" height="10" fill="${W}"/><rect x="98" y="34" width="16" height="46" fill="${W}"/><rect x="96" y="24" width="5" height="10" fill="${W}"/><rect x="105" y="24" width="5" height="10" fill="${W}"/><rect x="114" y="24" width="5" height="10" fill="${W}"/><rect x="44" y="46" width="52" height="34" fill="${WS}"/><path d="M62 46 L70 30 L78 46 Z" fill="${WS}"/><rect x="68" y="14" width="4" height="16" fill="${G}"/><path d="M72 14 L84 20 L72 24 Z" fill="${G}"/>`),
+  church: SVG_WRAP(`<rect x="45" y="42" width="50" height="38" fill="${WS}"/><path d="M45 42 L70 20 L95 42 Z" fill="${W}"/><rect x="67" y="6" width="6" height="16" fill="${G}"/><path d="M64 10 H76 M70 6 V16" stroke="${G}" stroke-width="3"/><circle cx="70" cy="60" r="7" fill="#F2EAD9"/>`),
+  bridge: SVG_WRAP(`<path d="M15 62 Q70 12 125 62" stroke="${W}" stroke-width="5" fill="none"/><line x1="15" y1="62" x2="125" y2="62" stroke="${T}" stroke-width="5"/><line x1="40" y1="62" x2="40" y2="46" stroke="${W}" stroke-width="3"/><line x1="70" y1="62" x2="70" y2="34" stroke="${W}" stroke-width="3"/><line x1="100" y1="62" x2="100" y2="46" stroke="${W}" stroke-width="3"/><path d="M0 74 Q35 66 70 74 T140 74" stroke="${T}" stroke-width="4" fill="none" opacity=".5"/>`),
+  garden: SVG_WRAP(`<circle cx="40" cy="34" r="18" fill="${T}"/><circle cx="70" cy="24" r="22" fill="${T}" opacity=".85"/><circle cx="100" cy="36" r="16" fill="${T}"/><rect x="66" y="44" width="8" height="34" fill="${WS}"/><path d="M10 80 Q70 68 130 80" stroke="${I}" stroke-width="3" fill="none" opacity=".4"/>`),
+  mountain: SVG_WRAP(`<polygon points="20,80 55,26 90,80" fill="${WS}"/><polygon points="45,80 82,18 120,80" fill="${W}"/><polygon points="72,34 82,18 92,34" fill="#F2EAD9"/><polygon points="46,50 55,26 64,50" fill="#F2EAD9"/>`),
+  nature: SVG_WRAP(`<path d="M0 60 Q35 30 70 55 T140 50 V90 H0 Z" fill="${T}" opacity=".55"/><path d="M0 74 Q40 50 80 70 T140 66 V90 H0 Z" fill="${W}" opacity=".65"/>`),
+  cablecar: SVG_WRAP(`<line x1="8" y1="66" x2="132" y2="18" stroke="${I}" stroke-width="2"/><line x1="8" y1="74" x2="132" y2="26" stroke="${I}" stroke-width="2"/><rect x="8" y="60" width="8" height="18" fill="${W}"/><rect x="124" y="12" width="8" height="18" fill="${W}"/><rect x="58" y="40" width="24" height="16" rx="3" fill="${G}"/><line x1="66" y1="34" x2="66" y2="40" stroke="${I}" stroke-width="2"/><line x1="76" y1="30" x2="76" y2="40" stroke="${I}" stroke-width="2"/>`),
+  bath: SVG_WRAP(`<path d="M35 70 A35 30 0 0 1 105 70 Z" fill="${W}"/><rect x="20" y="70" width="100" height="10" fill="${WS}"/><path d="M55 40 q6 -10 0 -20" stroke="${G}" stroke-width="3" fill="none"/><path d="M70 34 q6 -10 0 -20" stroke="${G}" stroke-width="3" fill="none"/><path d="M85 40 q6 -10 0 -20" stroke="${G}" stroke-width="3" fill="none"/>`),
+  monument: SVG_WRAP(`<rect x="50" y="24" width="14" height="52" rx="6" fill="${W}"/><circle cx="57" cy="16" r="8" fill="${WS}"/><rect x="76" y="30" width="14" height="46" rx="6" fill="${WS}"/><circle cx="83" cy="22" r="8" fill="${W}"/><rect x="20" y="76" width="100" height="4" fill="${I}" opacity=".4"/>`),
+  cave: SVG_WRAP(`<path d="M15 80 Q15 20 70 20 Q125 20 125 80 Z" fill="${W}"/><path d="M15 80 Q15 34 70 34 Q125 34 125 80 Z" fill="#2B2420"/><polygon points="40,34 45,52 35,52" fill="${W}"/><polygon points="65,34 70,58 60,58" fill="${W}"/><polygon points="92,34 97,50 87,50" fill="${W}"/>`),
+  market: SVG_WRAP(`<path d="M15 34 L20 20 H120 L125 34 Z" fill="${WS}"/><rect x="20" y="34" width="20" height="4" fill="${G}"/><rect x="45" y="34" width="20" height="4" fill="#F2EAD9"/><rect x="70" y="34" width="20" height="4" fill="${G}"/><rect x="95" y="34" width="20" height="4" fill="#F2EAD9"/><rect x="25" y="38" width="90" height="42" fill="${W}"/>`),
+  beach: SVG_WRAP(`<circle cx="106" cy="24" r="14" fill="${G}"/><path d="M0 56 Q35 44 70 56 T140 56" stroke="${T}" stroke-width="4" fill="none"/><path d="M0 68 Q35 56 70 68 T140 68" stroke="${T}" stroke-width="4" fill="none" opacity=".6"/><path d="M0 80 Q35 70 70 80 T140 80" stroke="${T}" stroke-width="4" fill="none" opacity=".35"/>`),
+  museum: SVG_WRAP(`<polygon points="70,14 118,40 22,40" fill="${W}"/><rect x="18" y="40" width="104" height="8" fill="${WS}"/><rect x="26" y="50" width="10" height="28" fill="${W}"/><rect x="46" y="50" width="10" height="28" fill="${W}"/><rect x="66" y="50" width="10" height="28" fill="${W}"/><rect x="86" y="50" width="10" height="28" fill="${W}"/><rect x="106" y="50" width="10" height="28" fill="${W}"/><rect x="16" y="80" width="108" height="5" fill="${I}" opacity=".4"/>`),
+  tower: SVG_WRAP(`<rect x="64" y="18" width="12" height="62" fill="${W}"/><circle cx="70" cy="12" r="9" fill="${G}"/><ellipse cx="70" cy="38" rx="22" ry="7" fill="none" stroke="${WS}" stroke-width="3"/><ellipse cx="70" cy="56" rx="16" ry="6" fill="none" stroke="${WS}" stroke-width="3"/><rect x="50" y="80" width="40" height="6" fill="${I}" opacity=".4"/>`),
+  dolphin: SVG_WRAP(`<path d="M20 66 Q45 20 78 34 Q70 40 74 48 Q90 44 100 30 Q96 46 80 56 Q56 66 20 66 Z" fill="${T}"/><circle cx="34" cy="46" r="2.4" fill="#F2EAD9"/><path d="M0 76 Q35 66 70 76 T140 76" stroke="${T}" stroke-width="4" fill="none" opacity=".4"/>`),
+  waterfall: SVG_WRAP(`<path d="M30 10 L110 10 L100 40 L40 40 Z" fill="${WS}"/><path d="M50 40 Q46 60 50 80" stroke="#F2EAD9" stroke-width="5" fill="none" opacity=".85"/><path d="M65 40 Q61 60 65 80" stroke="#F2EAD9" stroke-width="5" fill="none" opacity=".7"/><path d="M80 40 Q76 60 80 80" stroke="#F2EAD9" stroke-width="5" fill="none" opacity=".85"/><ellipse cx="65" cy="82" rx="45" ry="6" fill="${T}" opacity=".5"/>`)
+};
+function renderThumb(thumbEl, land){
+  thumbEl.innerHTML = `<div class="illustration">${CATEGORY_SVG[land.cat] || CATEGORY_SVG.city}</div>`;
+  const imgs = (land.images || []).filter(Boolean);
+  if(!imgs.length) return;
+  const gallery = document.createElement('div');
+  gallery.className = 'gallery';
+  imgs.forEach((src, i)=>{
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = land.name + ' - ' + (i+1);
+    img.loading = 'lazy';
+    img.onerror = function(){ img.remove(); updateDots(); };
+    gallery.appendChild(img);
+  });
+  thumbEl.appendChild(gallery);
+  if(imgs.length > 1){
+    const prev = document.createElement('button');
+    prev.type='button'; prev.className='g-nav g-prev'; prev.innerHTML='‹';
+    const isRtl = document.documentElement.dir === 'rtl';
+    prev.onclick = ()=> gallery.scrollBy({left: gallery.clientWidth * (isRtl?1:-1), behavior:'smooth'});
+    const next = document.createElement('button');
+    next.type='button'; next.className='g-nav g-next'; next.innerHTML='›';
+    next.onclick = ()=> gallery.scrollBy({left: gallery.clientWidth * (isRtl?-1:1), behavior:'smooth'});
+    thumbEl.appendChild(prev); thumbEl.appendChild(next);
+    const dots = document.createElement('div');
+    dots.className = 'g-dots';
+    imgs.forEach(()=> dots.appendChild(document.createElement('span')));
+    thumbEl.appendChild(dots);
+    function updateDots(){
+      const remaining = gallery.querySelectorAll('img').length;
+      dots.querySelectorAll('span').forEach((d,i)=> d.style.display = i < remaining ? '' : 'none');
+    }
+  }
+  if(land.video){
+    const vid = document.createElement('a');
+    vid.className = 'g-video'; vid.href = land.video; vid.target='_blank'; vid.rel='noopener';
+    vid.title = 'مشاهدة فيديو'; vid.textContent = '🎥';
+    thumbEl.appendChild(vid);
+  }
+}
+
+/* ================= CARDS ================= */
+function renderCards(city){
+  const grid = document.getElementById('grid-'+city.id);
+  grid.innerHTML = '';
+
+  if(viewMode[city.id]==='day'){
+    const dayNums = [...new Set(city.landmarks.map(l=>l.day))].sort((a,b)=>a-b);
+    dayNums.forEach(d=>{
+      const header = document.createElement('div');
+      header.className = 'day-header';
+      header.style.gridColumn = '1/-1';
+      header.textContent = 'اليوم ' + d;
+      grid.appendChild(header);
+      const sub = document.createElement('div');
+      sub.className = 'grid';
+      sub.style.gridColumn = '1/-1';
+      grid.appendChild(sub);
+      city.landmarks.filter(l=>l.day===d).forEach(l=>{
+        const before = grid.children.length;
+        buildCardInto(sub, l, city);
+      });
+    });
+  } else {
+    city.landmarks.forEach(l=> buildCardInto(grid, l, city));
+  }
+
+  function buildCardInto(container, l, city){
+    const wrap = document.createElement('div');
+    wrap.className = 'card' + (visited[l.id]?' visited':'');
+    wrap.id = 'card-'+l.id+'-'+container.id||'';
+    const hasActivities = l.activities && l.activities.length;
+    wrap.innerHTML = `
+      <div class="thumb" id="thumb-${l.id}-${Math.random().toString(36).slice(2,7)}">🏞️</div>
+      <div class="stamp"><span>تمت<br>الزيارة<br>✓</span></div>
+      <div class="body">
+        <div class="title-row">
+          <h3>${l.name}</h3>
+          ${hasActivities ? `<button type="button" class="act-chip" data-id="${l.id}">🎯 ${l.activities.length} ${l.activities.length>1?'أنشطة':'نشاط'}</button>` : ''}
+        </div>
+        <p>${l.desc}</p>
+        ${hasActivities ? `<div class="activities-panel" id="panel-${l.id}"><div class="activities-inner">${l.activities.map(a=>`
+          <div class="activity">
+            <div class="activity-head"><span class="a-icon">${a.icon||'🎯'}</span><span class="a-title">${a.title||''}</span></div>
+            <p class="a-desc">${a.desc||''}</p>
+            <div class="a-meta">
+              ${a.duration && a.duration!=='—' ? `<span class="a-badge">⏱ ${a.duration}</span>` : ''}
+              ${a.price && a.price!=='—' ? `<span class="a-badge">💰 ${a.price}</span>` : ''}
+              ${a.season ? `<span class="a-badge">📅 ${a.season}</span>` : ''}
+            </div>
+          </div>`).join('')}</div></div>` : ''}
+        <div class="row">
+          <button type="button" class="focus-map-btn" data-id="${l.id}">🗺️ حدده على الخريطة</button>
+          <a class="loc-link" target="_blank" rel="noopener" href="${l.gmaps || ('https://www.google.com/maps?q='+l.lat+','+l.lng)}">📍 فتح في خرائط جوجل</a>
+        </div>
+        <div class="row">
+          <label class="check-label">
+            <input type="checkbox" ${visited[l.id]?'checked':''} data-id="${l.id}"> تمت الزيارة
+          </label>
+          <span style="font-size:11px;color:var(--ink-soft);font-weight:700">اليوم ${l.day}</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(wrap);
+    cardRefs[l.id] = wrap;
+    renderThumb(wrap.querySelector('.thumb'), l);
+    wrap.querySelector('.focus-map-btn').addEventListener('click', ()=> focusMarker(l.id));
+    if(hasActivities){
+      const toggleActivities = ()=> wrap.classList.toggle('activities-open');
+      wrap.querySelector('.act-chip').addEventListener('click', (e)=>{ e.stopPropagation(); toggleActivities(); });
+      wrap.addEventListener('click', (e)=>{
+        if(e.target.closest('a, button, input, .g-nav, .gallery, .check-label')) return;
+        toggleActivities();
+      });
+    }
+    wrap.querySelector('input[type=checkbox]').addEventListener('change', (e)=>{
+      const id = e.target.dataset.id;
+      if(e.target.checked) visited[id] = true; else delete visited[id];
+      saveVisited();
+      wrap.classList.toggle('visited', !!visited[id]);
+      refreshMarkerIcon(id);
+      updateProgress(city);
+      updateHeaderStamps();
+    });
+  }
+}
+
+/* ================= PROGRESS ================= */
+function updateProgress(city){
+  const total = city.landmarks.length;
+  const done = visitedCountOf(city);
+  const pct = Math.round(done/total*100);
+  const bar = document.getElementById('bar-'+city.id);
+  const lbl = document.getElementById('lbl-'+city.id);
+  if(bar) bar.style.width = pct+'%';
+  if(lbl) lbl.textContent = `${done} من ${total} تم زيارتها (${pct}%)`;
+  const tabBtn = tabsEl.querySelector(`.tab-btn[data-city="${city.id}"]`);
+  if(tabBtn) tabBtn.style.setProperty('--p', pct);
+}
+function updateHeaderStamps(){
+  document.getElementById('totalStamps').textContent = totalVisited();
+  document.getElementById('totalCount').textContent = totalLandmarks();
+}
+
+/* ================= MAIN RENDER (build once, then toggle) ================= */
+const renderedCities = new Set();
+
+function updateSectionsActive(){
+  CITIES.forEach(c=>{
+    const sec = document.getElementById('sec-'+c.id);
+    if(sec) sec.classList.toggle('active', c.id===activeCity);
+  });
+}
+
+function activateCity(cityId, userInitiated){
+  activeCity = cityId;
+  buildTabs();
+  updateSectionsActive();
+  const city = CITIES.find(c=>c.id===cityId);
+  if(!renderedCities.has(cityId)){
+    ensureMap(city);
+    renderCards(city);
+    updateToggleButtons(cityId);
+    renderedCities.add(cityId);
+  }
+  updateProgress(city);
+  setTimeout(()=>{
+    if(mapInstances[cityId]){
+      mapInstances[cityId].invalidateSize();
+      if(mapBounds[cityId]) mapInstances[cityId].fitBounds(mapBounds[cityId], {padding:[28,28]});
+    }
+  }, 80);
+  if(userInitiated) scrollToActive();
+}
+
+function renderAll(){
+  buildTabs();
+  buildSections();
+  CITIES.forEach(c=> updateProgress(c));
+  updateHeaderStamps();
+  activateCity(activeCity);
+}
+
+function buildTabs(){
+  tabsEl.innerHTML = CITIES.map(c=>{
+    const pct = Math.round(visitedCountOf(c)/c.landmarks.length*100);
+    return `<button class="tab-btn ${c.id===activeCity?'active':''}" data-city="${c.id}" style="--p:${pct}">
+      <span class="ring"></span> ${c.name} <span style="opacity:.65;font-weight:500">· ${c.days} ${c.days>1?'أيام':'يوم'}</span>
+    </button>`;
+  }).join('');
+  tabsEl.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(btn.dataset.city === activeCity) return;
+      activateCity(btn.dataset.city, true);
+    });
+  });
+};
+
+renderAll();
+</script>
+</body>
+</html>
